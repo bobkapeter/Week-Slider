@@ -1,0 +1,15 @@
+{
+	"scripts": {
+		"p": "parcel serve index.html --port 8000",
+		"build": "parcel build --out-dir docs/ --public-url . index.html"
+	},
+	"dependencies": {
+		"vue": "^2.6.10",
+		"vue-hot-reload-api": "^2.3.4"
+	},
+	"devDependencies": {
+		"@vue/component-compiler-utils": "^3.0.0",
+		"cssnano": "^4.1.10",
+		"vue-template-compiler": "^2.6.10"
+	}
+}
