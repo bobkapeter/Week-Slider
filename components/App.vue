@@ -4,7 +4,6 @@
 
 		<!-- WEEK SLIDER -->
 		<week-slider></week-slider>
-		<week-slider-extended></week-slider-extended>
 	</div>
 </template>
 
@@ -12,12 +11,10 @@
 <script>
 import Vue from "vue";
 import WeekSlider from "./WeekSlider";
-import WeekSliderExtended from "./WeekSliderExtended";
 
 export default {
 	components: {
 		WeekSlider,
-		WeekSliderExtended
 	}
 };
 </script>
