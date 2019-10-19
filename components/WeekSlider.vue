@@ -2,6 +2,19 @@
 	<div id="week-slider">
 		<!-- Slider -->
 		<div class="slider">
+			<p>
+				<span class="month">{{ month }}</span>
+				<span class="year">{{ year }}</span>
+			</p>
+			<ul class="day-names">
+				<li>Po</li>
+				<li>Ut</li>
+				<li>St</li>
+				<li>Št</li>
+				<li>Pi</li>
+				<li>So</li>
+				<li>Ne</li>
+			</ul>
 			<transition-group
 				class="slider-list"
 				name="slider-list"
@@ -9,11 +22,11 @@
 			>
 				<li
 					class="slider-list-item"
-					:class="{highlight: day == currentDate}"
+					:class="{highlight: day.fullDate == currentDate}"
 					v-for="day in days"
-					:key="day"
+					:key="day.fullDate"
 				>
-					{{ day }}
+					{{ day.number }}
 				</li>
 			</transition-group>
 		</div>
@@ -57,7 +70,8 @@ export default {
 			firstDay: null,
 			lastDay: null,
 			offset: 0,
-			month: ""
+			month: "",
+			year: ""
 		};
 	},
 	computed: {
@@ -66,7 +80,69 @@ export default {
 		}
 	},
 
+	watch: {
+		offset() {
+			this._setMonthAndYear();
+		}
+	},
+
 	methods: {
+		/**
+		 * PRIVATE: SET MONTH & YEAR
+		 */
+		_setMonthAndYear() {
+			const months = [
+				"Jan",
+				"Feb",
+				"Mar",
+				"Apr",
+				"Máj",
+				"Jún",
+				"Júl",
+				"Aug",
+				"Sep",
+				"Okt",
+				"Nov",
+				"Dec"
+			];
+
+			const monday = new Date(this.firstDay);
+			monday.setDate(monday.getDate() + 7);
+
+			const sunday = new Date(monday);
+			sunday.setDate(sunday.getDate() + 7);
+
+			// SET: this.month
+			if (monday.getMonth() === sunday.getMonth()) {
+				this.month = months[monday.getMonth()];
+			} else {
+				this.month = `
+						${months[monday.getMonth()]}
+						/
+						${months[sunday.getMonth()]}
+					`;
+			}
+
+			// SET: this.year
+			if (monday.getFullYear() === sunday.getFullYear()) {
+				this.year = monday.getFullYear();
+			} else {
+				this.year = `
+                    ${monday.getFullYear()}
+                    /
+                    ${sunday.getFullYear()}
+                `;
+			}
+		},
+		/**
+		 * PRIVATE: GET OBJECT THAT REPRESENTS DAY
+		 */
+		_getDay(date) {
+			return {
+				fullDate: this._formatDate(date),
+				number: date.getDate() + "."
+			};
+		},
 		/**
 		 * PRIVATE: FORMAT DATE TO LOCALE DATE STRING
 		 */
@@ -77,12 +153,7 @@ export default {
 				year: "numeric"
 			};
 
-			const stringDate = date
-				.toLocaleDateString("sk-SK", dateFormatOptions)
-				.split(". ");
-			const [day, month, year] = stringDate;
-
-			return `${day}.${month}.${year.slice(2)}`;
+			return date.toLocaleDateString("sk-SK", dateFormatOptions);
 		},
 		/**
 		 * RESET SLIDER (SHOW ACTUAL WEEK)
@@ -110,7 +181,7 @@ export default {
 				this.lastDay.setDate(this.lastDay.getDate() + 1);
 
 				this.days.shift();
-				this.days.push(this._formatDate(this.lastDay));
+				this.days.push(this._getDay(this.lastDay));
 			}
 		},
 		/**
@@ -124,7 +195,7 @@ export default {
 				this.firstDay.setDate(this.firstDay.getDate() - 1);
 
 				this.days.pop();
-				this.days.unshift(this._formatDate(this.firstDay));
+				this.days.unshift(this._getDay(this.firstDay));
 			}
 		},
 		/**
@@ -138,7 +209,7 @@ export default {
 
 			while (index < 21) {
 				day.setDate(day.getDate() + 1);
-				this.days.push(this._formatDate(day));
+				this.days.push(this._getDay(day));
 
 				index++;
 			}
@@ -158,6 +229,7 @@ export default {
 		this.lastDay = new Date(monday);
 		this.lastDay.setDate(monday.getDate() + 13);
 
+		this._setMonthAndYear();
 		this.generateAllDays();
 	}
 };
@@ -166,30 +238,68 @@ export default {
 
 <style scoped>
 #week-slider {
+	width: 100%;
+	max-width: 350px;
 	color: #2d2d2d;
 	text-align: center;
+	padding: 1em 3em;
+	margin: auto;
+	border: 1px solid #e0e0e0;
+	border-radius: 1em;
+}
+
+#week-slider p {
+	margin-bottom: 0;
+	display: flex;
+	justify-content: space-between;
+}
+
+#week-slider p span {
+	background-color: #ffc107;
+	color: #2d2d2d;
+	font-size: 10px;
+	font-weight: bold;
+	text-transform: uppercase;
+	padding: 0.6em 2em;
+	border-radius: 0.6em;
+}
+
+/**
+*** DAY NAMES
+*/
+.day-names {
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	padding-left: 0;
+	margin-bottom: 0;
+}
+.day-names li {
+	font-size: 12px;
+	width: 50px;
 }
 
 /**
 *** SLIDER
 */
 .slider {
-	width: 560px;
+	width: 350px;
 	overflow: hidden;
 	margin: auto;
 }
 
 .slider-list {
-	width: 1680px;
+	width: 1050px;
 	position: relative;
-	left: -560px;
+	left: -350px;
 	list-style: none;
 	padding-left: 0;
+	margin-top: 5px;
 }
 
 .slider-list-item {
 	display: inline-block;
-	width: 80px;
+	width: 50px;
 
 	font-size: 12px;
 	text-align: center;
@@ -202,6 +312,9 @@ export default {
 	border-right: none;
 	border-left: none;
 	box-sizing: border-box;
+}
+.slider-list-item:not(.highlight):hover {
+	background-color: #e0e0e0;
 }
 .slider-list-item.highlight {
 	background-color: #ffc107;
